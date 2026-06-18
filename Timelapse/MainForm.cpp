@@ -19,7 +19,6 @@ using namespace Timelapse;
 void AutoLogin();
 static void loadMaps(); 
 static void mapRush(int destMapID);
-static void pollPortalTeleportDoubleTap();
 
 //Managed Global Variables
 ref struct GlobalRefs {
@@ -403,7 +402,24 @@ void MainForm::GUITimer_Tick(Object^  sender, EventArgs^  e) {
 		lbItemCount->Text = PointerFuncs::getItemCount();
 		lbPortalCount->Text = PointerFuncs::getPortalCount();
 		lbNPCCount->Text = PointerFuncs::getNPCCount();
-		pollPortalTeleportDoubleTap();
+
+		if (cbPortalTeleport->Checked) {
+			static DWORD leftLastPress = 0;
+			static DWORD rightLastPress = 0;
+			const DWORD doubleTapMs = 400;
+			DWORD now = GetTickCount();
+
+			if (GetAsyncKeyState(VK_LEFT) & 1) {
+				if (leftLastPress != 0 && now - leftLastPress < doubleTapMs)
+					PortalTeleportByDirection(-1);
+				leftLastPress = now;
+			}
+			if (GetAsyncKeyState(VK_RIGHT) & 1) {
+				if (rightLastPress != 0 && now - rightLastPress < doubleTapMs)
+					PortalTeleportByDirection(1);
+				rightLastPress = now;
+			}
+		}
 	}
 }
 #pragma endregion
@@ -2574,26 +2590,6 @@ static Generic::List<PortalData^>^ getCurrentMapPortals() {
 		if (portalIndex != (prevIndex + 1)) nextPortalExists = false;
 	}
 	return result;
-}
-
-static void pollPortalTeleportDoubleTap() {
-	if (!MainForm::TheInstance->cbPortalTeleport->Checked) return;
-
-	static DWORD leftLastPress = 0;
-	static DWORD rightLastPress = 0;
-	const DWORD doubleTapMs = 400;
-	DWORD now = GetTickCount();
-
-	if (GetAsyncKeyState(VK_LEFT) & 1) {
-		if (leftLastPress != 0 && now - leftLastPress < doubleTapMs)
-			MainForm::TheInstance->PortalTeleportByDirection(-1);
-		leftLastPress = now;
-	}
-	if (GetAsyncKeyState(VK_RIGHT) & 1) {
-		if (rightLastPress != 0 && now - rightLastPress < doubleTapMs)
-			MainForm::TheInstance->PortalTeleportByDirection(1);
-		rightLastPress = now;
-	}
 }
 
 void MainForm::PortalTeleportByDirection(int side) {
