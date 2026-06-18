@@ -168,6 +168,8 @@ namespace Timelapse {
 	private: System::Windows::Forms::CheckBox^  cbClickTeleport;
 	private: System::Windows::Forms::CheckBox^  cbMouseTeleport;
 	private: System::Windows::Forms::CheckBox^  cbPortalTeleport;
+	private: System::Windows::Forms::CheckBox^  cbQingGong;
+	private: System::Windows::Forms::CheckBox^  cbWenRuTaiShan;
 	private: System::Windows::Forms::CheckBox^  cbFullGodmode;
 	private: System::Windows::Forms::Panel^  panel16;
 public: System::Windows::Forms::TextBox^  tbDupeXFoothold;
@@ -711,6 +713,8 @@ public:
 			this->label49 = (gcnew System::Windows::Forms::Label());
 			this->cbMouseTeleport = (gcnew System::Windows::Forms::CheckBox());
 			this->cbPortalTeleport = (gcnew System::Windows::Forms::CheckBox());
+			this->cbQingGong = (gcnew System::Windows::Forms::CheckBox());
+			this->cbWenRuTaiShan = (gcnew System::Windows::Forms::CheckBox());
 			this->label50 = (gcnew System::Windows::Forms::Label());
 			this->cbSwimInAir = (gcnew System::Windows::Forms::CheckBox());
 			this->tbMouseTeleport = (gcnew System::Windows::Forms::TextBox());
@@ -3460,6 +3464,8 @@ public:
 			// 
 			// groupBox4
 			// 
+			this->groupBox4->Controls->Add(this->cbWenRuTaiShan);
+			this->groupBox4->Controls->Add(this->cbQingGong);
 			this->groupBox4->Controls->Add(this->cbPortalTeleport);
 			this->groupBox4->Controls->Add(this->cbMouseFly);
 			this->groupBox4->Controls->Add(this->cbClickTeleport);
@@ -3472,7 +3478,7 @@ public:
 			this->groupBox4->ForeColor = System::Drawing::Color::WhiteSmoke;
 			this->groupBox4->Location = System::Drawing::Point(6, 313);
 			this->groupBox4->Name = L"groupBox4";
-			this->groupBox4->Size = System::Drawing::Size(378, 86);
+			this->groupBox4->Size = System::Drawing::Size(378, 128);
 			this->groupBox4->TabIndex = 26;
 			this->groupBox4->TabStop = false;
 			this->groupBox4->Text = L"移动类";
@@ -3540,6 +3546,34 @@ public:
 			this->cbPortalTeleport->TabIndex = 10;
 			this->cbPortalTeleport->Text = L"传送门瞬移(F5)";
 			this->cbPortalTeleport->UseVisualStyleBackColor = false;
+			// 
+			// cbQingGong
+			// 
+			this->cbQingGong->AutoSize = true;
+			this->cbQingGong->FlatAppearance->BorderColor = System::Drawing::Color::Maroon;
+			this->cbQingGong->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
+			this->cbQingGong->ForeColor = System::Drawing::Color::White;
+			this->cbQingGong->Location = System::Drawing::Point(130, 58);
+			this->cbQingGong->Name = L"cbQingGong";
+			this->cbQingGong->Size = System::Drawing::Size(60, 17);
+			this->cbQingGong->TabIndex = 11;
+			this->cbQingGong->Text = L"轻功";
+			this->cbQingGong->UseVisualStyleBackColor = false;
+			this->cbQingGong->CheckedChanged += gcnew System::EventHandler(this, &MainForm::cbQingGong_CheckedChanged);
+			// 
+			// cbWenRuTaiShan
+			// 
+			this->cbWenRuTaiShan->AutoSize = true;
+			this->cbWenRuTaiShan->FlatAppearance->BorderColor = System::Drawing::Color::Maroon;
+			this->cbWenRuTaiShan->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
+			this->cbWenRuTaiShan->ForeColor = System::Drawing::Color::White;
+			this->cbWenRuTaiShan->Location = System::Drawing::Point(251, 58);
+			this->cbWenRuTaiShan->Name = L"cbWenRuTaiShan";
+			this->cbWenRuTaiShan->Size = System::Drawing::Size(84, 17);
+			this->cbWenRuTaiShan->TabIndex = 12;
+			this->cbWenRuTaiShan->Text = L"稳如泰山";
+			this->cbWenRuTaiShan->UseVisualStyleBackColor = false;
+			this->cbWenRuTaiShan->CheckedChanged += gcnew System::EventHandler(this, &MainForm::cbWenRuTaiShan_CheckedChanged);
 			// 
 			// label50
 			// 
@@ -4050,7 +4084,7 @@ public:
 			this->cbUnlimitedAttack->Name = L"cbUnlimitedAttack";
 			this->cbUnlimitedAttack->Size = System::Drawing::Size(100, 17);
 			this->cbUnlimitedAttack->TabIndex = 6;
-			this->cbUnlimitedAttack->Text = L"无限攻击";
+			this->cbUnlimitedAttack->Text = L"攻(攻击不停)";
 			this->cbUnlimitedAttack->UseVisualStyleBackColor = false;
 			this->cbUnlimitedAttack->CheckedChanged += gcnew System::EventHandler(this, &MainForm::cbUnlimitedAttack_CheckedChanged);
 			// 
@@ -6734,6 +6768,8 @@ public:
 	private: System::Void cbInstantLootItems_CheckedChanged(System::Object^  sender, System::EventArgs^  e);
 	private: System::Void cbTubi_CheckedChanged(System::Object^  sender, System::EventArgs^  e);
 	private: System::Void cbItemVac_CheckedChanged(System::Object^  sender, System::EventArgs^  e);
+	private: System::Void cbQingGong_CheckedChanged(System::Object^  sender, System::EventArgs^  e);
+	private: System::Void cbWenRuTaiShan_CheckedChanged(System::Object^  sender, System::EventArgs^  e);
 	private: System::Void cbUnlimitedAttack_CheckedChanged(System::Object^  sender, System::EventArgs^  e);
 	private: System::Void cbInfiniteChat_CheckedChanged(System::Object^  sender, System::EventArgs^  e);
 	private: System::Void cbNoPlayerDeath_CheckedChanged(System::Object^  sender, System::EventArgs^  e);

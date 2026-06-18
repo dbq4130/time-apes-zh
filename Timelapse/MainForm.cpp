@@ -1078,7 +1078,29 @@ void MainForm::cbSwimInAir_CheckedChanged(Object^  sender, EventArgs^  e) {
 		WriteMemory(swimInAirAddr, 2, 0x75, 0x04); //jne 0070470A
 }
 
-//Unlimited Attack (CAntiRepeat::TryRepeat())
+//轻功 (083 trainer: swim 00704704 + static BF3E20/BF3EA4)
+void MainForm::cbQingGong_CheckedChanged(Object^ sender, EventArgs^ e) {
+	if (this->cbQingGong->Checked) {
+		WriteMemory(swimInAirAddr, 2, 0x74, 0x04);
+		WriteMemory(qingGongAddr1, 4, 0x01, 0x00, 0x00, 0x00);
+		WriteMemory(qingGongAddr2, 4, 0x01, 0x00, 0x00, 0x00);
+	}
+	else {
+		WriteMemory(swimInAirAddr, 2, 0x75, 0x04);
+		WriteMemory(qingGongAddr1, 4, 0x00, 0x00, 0x00, 0x00);
+		WriteMemory(qingGongAddr2, 4, 0x00, 0x00, 0x00, 0x00);
+	}
+}
+
+//稳如泰山 (083 trainer static flag at BF430C)
+void MainForm::cbWenRuTaiShan_CheckedChanged(Object^ sender, EventArgs^ e) {
+	if (this->cbWenRuTaiShan->Checked)
+		WriteMemory(wenRuTaiShanAddr, 4, 0x01, 0x00, 0x00, 0x00);
+	else
+		WriteMemory(wenRuTaiShanAddr, 4, 0x00, 0x00, 0x00, 0x00);
+}
+
+//Unlimited Attack (CAntiRepeat::TryRepeat()) — 083: 攻/攻击不停 @ 009536E0
 void MainForm::cbUnlimitedAttack_CheckedChanged(Object^  sender, EventArgs^  e) {
 	if (this->cbUnlimitedAttack->Checked)
 		WriteMemory(unlimitedAttackAddr, 1, 0xEB); //jmp 0095370C [first byte]
