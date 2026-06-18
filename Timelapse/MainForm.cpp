@@ -18,7 +18,8 @@ using namespace Timelapse;
 //Forward declarations
 void AutoLogin();
 static void loadMaps(); 
-static void mapRush(int destMapID); 
+static void mapRush(int destMapID);
+static void pollPortalTeleportDoubleTap();
 
 //Managed Global Variables
 ref struct GlobalRefs {
@@ -100,7 +101,7 @@ void MainForm::MainForm_Load(Object^  sender, EventArgs^  e) {
 
 	//注册 F9 全局热键：游戏全屏/窗体跑偏时，一键把窗体复位到屏幕中央
 	RegisterHotKey(static_cast<HWND>(this->Handle.ToPointer()), HOTKEY_RECENTER_ID, 0, VK_F9);
-	//功能开关全局热键：F3 点击瞬移、F4 鼠标瞬移、F1 攻击延迟（攻速）；MOD_NOREPEAT 防长按重复触发
+	//功能开关全局热键：F3 点击瞬移、F4 鼠标瞬移、F1 攻击延迟、F5 传送门瞬移开关
 	HWND hWndSelf = static_cast<HWND>(this->Handle.ToPointer());
 	RegisterHotKey(hWndSelf, HOTKEY_CLICKTP_ID, MOD_NOREPEAT, VK_F3);
 	RegisterHotKey(hWndSelf, HOTKEY_MOUSETP_ID, MOD_NOREPEAT, VK_F4);
@@ -402,6 +403,7 @@ void MainForm::GUITimer_Tick(Object^  sender, EventArgs^  e) {
 		lbItemCount->Text = PointerFuncs::getItemCount();
 		lbPortalCount->Text = PointerFuncs::getPortalCount();
 		lbNPCCount->Text = PointerFuncs::getNPCCount();
+		pollPortalTeleportDoubleTap();
 	}
 }
 #pragma endregion
@@ -2574,22 +2576,33 @@ static Generic::List<PortalData^>^ getCurrentMapPortals() {
 	return result;
 }
 
-void MainForm::PortalTeleportByDirection() {
-	int charX = ReadPointerSignedInt(UserLocalBase, OFS_CharX);
+static void pollPortalTeleportDoubleTap() {
+	if (!MainForm::TheInstance->cbPortalTeleport->Checked) return;
 
-	bool leftKey = (GetAsyncKeyState(VK_LEFT) & 0x8000) != 0;
-	bool rightKey = (GetAsyncKeyState(VK_RIGHT) & 0x8000) != 0;
+	static DWORD leftLastPress = 0;
+	static DWORD rightLastPress = 0;
+	const DWORD doubleTapMs = 400;
+	DWORD now = GetTickCount();
+
+	if (GetAsyncKeyState(VK_LEFT) & 1) {
+		if (leftLastPress != 0 && now - leftLastPress < doubleTapMs)
+			MainForm::TheInstance->PortalTeleportByDirection(-1);
+		leftLastPress = now;
+	}
+	if (GetAsyncKeyState(VK_RIGHT) & 1) {
+		if (rightLastPress != 0 && now - rightLastPress < doubleTapMs)
+			MainForm::TheInstance->PortalTeleportByDirection(1);
+		rightLastPress = now;
+	}
+}
+
+void MainForm::PortalTeleportByDirection(int side) {
+	if (side != -1 && side != 1) return;
+
+	int charX = ReadPointerSignedInt(UserLocalBase, OFS_CharX);
 
 	static int cycleIndex = 0;
 	static int lastSide = 0;
-
-	int side = 0;
-	if (rightKey && !leftKey) side = 1;
-	else if (leftKey && !rightKey) side = -1;
-	else if (rightKey) side = 1;
-	else if (leftKey) side = -1;
-	else if (lastSide != 0) side = lastSide;
-	else return;
 
 	if (side == lastSide) cycleIndex++;
 	else {

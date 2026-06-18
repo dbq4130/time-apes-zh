@@ -2,7 +2,7 @@
 
 //F9 复位热键 ID（自定义值，避免与系统/游戏热键冲突）
 #define HOTKEY_RECENTER_ID 0x9001
-//功能开关热键 ID：F3 点击瞬移、F4 鼠标瞬移、F1 攻击延迟（攻速）
+//功能开关热键 ID：F3 点击瞬移、F4 鼠标瞬移、F1 攻击延迟、F5 传送门瞬移开关
 #define HOTKEY_CLICKTP_ID 0x9002
 #define HOTKEY_MOUSETP_ID 0x9003
 #define HOTKEY_ATKDELAY_ID 0x9004
@@ -37,7 +37,7 @@ namespace Timelapse {
 			}
 		}
 	protected:
-		//捕获全局热键(WM_HOTKEY = 0x0312)：F9 复位窗体；F3/F4/F1 翻转对应功能；F5 方向传送门瞬移
+		//捕获全局热键(WM_HOTKEY = 0x0312)：F9 复位窗体；F3/F4/F1/F5 翻转对应功能；开启传送门瞬移后双击方向键触发
 		virtual void WndProc(System::Windows::Forms::Message% m) override {
 			if (m.Msg == 0x0312) {
 				switch (m.WParam.ToInt32()) {
@@ -54,13 +54,13 @@ namespace Timelapse {
 						this->cbAttackDelay->Checked = !this->cbAttackDelay->Checked;
 						break;
 					case HOTKEY_PORTALTP_ID:
-						PortalTeleportByDirection();
+						this->cbPortalTeleport->Checked = !this->cbPortalTeleport->Checked;
 						break;
 				}
 			}
 			System::Windows::Forms::Form::WndProc(m);
 		}
-		void PortalTeleportByDirection();
+		void PortalTeleportByDirection(int side);
 		//把窗体拉回屏幕中央并置顶显示，确保随时能找回外挂窗口
 		void RecenterToScreen() {
 			System::Drawing::Rectangle area = System::Windows::Forms::Screen::PrimaryScreen->WorkingArea;
@@ -167,6 +167,7 @@ namespace Timelapse {
 	private: System::Windows::Forms::CheckBox^  cbSwimInAir;
 	private: System::Windows::Forms::CheckBox^  cbClickTeleport;
 	private: System::Windows::Forms::CheckBox^  cbMouseTeleport;
+	private: System::Windows::Forms::CheckBox^  cbPortalTeleport;
 	private: System::Windows::Forms::CheckBox^  cbFullGodmode;
 	private: System::Windows::Forms::Panel^  panel16;
 public: System::Windows::Forms::TextBox^  tbDupeXFoothold;
@@ -709,6 +710,7 @@ public:
 			this->cbClickTeleport = (gcnew System::Windows::Forms::CheckBox());
 			this->label49 = (gcnew System::Windows::Forms::Label());
 			this->cbMouseTeleport = (gcnew System::Windows::Forms::CheckBox());
+			this->cbPortalTeleport = (gcnew System::Windows::Forms::CheckBox());
 			this->label50 = (gcnew System::Windows::Forms::Label());
 			this->cbSwimInAir = (gcnew System::Windows::Forms::CheckBox());
 			this->tbMouseTeleport = (gcnew System::Windows::Forms::TextBox());
@@ -3458,6 +3460,7 @@ public:
 			// 
 			// groupBox4
 			// 
+			this->groupBox4->Controls->Add(this->cbPortalTeleport);
 			this->groupBox4->Controls->Add(this->cbMouseFly);
 			this->groupBox4->Controls->Add(this->cbClickTeleport);
 			this->groupBox4->Controls->Add(this->label49);
@@ -3469,7 +3472,7 @@ public:
 			this->groupBox4->ForeColor = System::Drawing::Color::WhiteSmoke;
 			this->groupBox4->Location = System::Drawing::Point(6, 313);
 			this->groupBox4->Name = L"groupBox4";
-			this->groupBox4->Size = System::Drawing::Size(378, 66);
+			this->groupBox4->Size = System::Drawing::Size(378, 86);
 			this->groupBox4->TabIndex = 26;
 			this->groupBox4->TabStop = false;
 			this->groupBox4->Text = L"移动类";
@@ -3524,6 +3527,19 @@ public:
 			this->cbMouseTeleport->Text = L"鼠标瞬移";
 			this->cbMouseTeleport->UseVisualStyleBackColor = false;
 			this->cbMouseTeleport->CheckedChanged += gcnew System::EventHandler(this, &MainForm::cbMouseTeleport_CheckedChanged);
+			// 
+			// cbPortalTeleport
+			// 
+			this->cbPortalTeleport->AutoSize = true;
+			this->cbPortalTeleport->FlatAppearance->BorderColor = System::Drawing::Color::Maroon;
+			this->cbPortalTeleport->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
+			this->cbPortalTeleport->ForeColor = System::Drawing::Color::White;
+			this->cbPortalTeleport->Location = System::Drawing::Point(10, 58);
+			this->cbPortalTeleport->Name = L"cbPortalTeleport";
+			this->cbPortalTeleport->Size = System::Drawing::Size(130, 17);
+			this->cbPortalTeleport->TabIndex = 10;
+			this->cbPortalTeleport->Text = L"传送门瞬移(F5)";
+			this->cbPortalTeleport->UseVisualStyleBackColor = false;
 			// 
 			// label50
 			// 
