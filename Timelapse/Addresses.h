@@ -237,8 +237,8 @@ ULONG OFS_PeopleCount = 0x18;
 ULONG InputBase = 0xBEC33C; // CInputSystem
 ULONG OFS_MouseAnimation = 0x9B4;
 ULONG OFS_MouseLocation = 0x978;
-ULONG OFS_MouseX = 0x8C;
-ULONG OFS_MouseY = OFS_MouseX + 4;
+ULONG OFS_MouseY = 0x8C;
+ULONG OFS_MouseX = 0x90;
 
 //TODO: Get valid names according to struct
 ULONG MobPoolBase = 0xBEBFA4; // CMobPool
