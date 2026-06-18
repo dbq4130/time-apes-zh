@@ -105,6 +105,7 @@ void MainForm::MainForm_Load(Object^  sender, EventArgs^  e) {
 	RegisterHotKey(hWndSelf, HOTKEY_CLICKTP_ID, MOD_NOREPEAT, VK_F3);
 	RegisterHotKey(hWndSelf, HOTKEY_MOUSETP_ID, MOD_NOREPEAT, VK_F4);
 	RegisterHotKey(hWndSelf, HOTKEY_ATKDELAY_ID, MOD_NOREPEAT, VK_F1);
+	RegisterHotKey(hWndSelf, HOTKEY_PORTALTP_ID, MOD_NOREPEAT, VK_F5);
 }
 
 void MainForm::MainForm_Shown(Object^  sender, EventArgs^  e) {
@@ -2541,6 +2542,86 @@ cliext::vector<MapPath^>^ generatePath(int startMapID, int destMapID) {
 	return finalPath;
 }
 
+static PortalData^ readPortalAt(short portalZRef) {
+	char* portalName = ReadMultiPointerString(PortalListBase, 3, 0x4, portalZRef, 0x4);
+	if (portalName == nullptr) return nullptr;
+
+	PortalData^ portalData = gcnew PortalData();
+	portalData->portalName = gcnew System::String(portalName);
+	portalData->portalType = (int)ReadMultiPointerSigned(PortalListBase, 3, 0x4, portalZRef, 0x8);
+	portalData->xPos = (int)ReadMultiPointerSigned(PortalListBase, 3, 0x4, portalZRef, 0xC);
+	portalData->yPos = (int)ReadMultiPointerSigned(PortalListBase, 3, 0x4, portalZRef, 0x10);
+	portalData->toMapID = (int)ReadMultiPointerSigned(PortalListBase, 3, 0x4, portalZRef, 0x1C);
+	return portalData;
+}
+
+static Generic::List<PortalData^>^ getCurrentMapPortals() {
+	Generic::List<PortalData^>^ result = gcnew Generic::List<PortalData^>();
+	short portalZRef = 0x4;
+	int portalIndex = (int)ReadMultiPointerSigned(PortalListBase, 3, 0x4, portalZRef, 0x0);
+	if (portalIndex != 0) return result;
+
+	bool nextPortalExists = true;
+	while (nextPortalExists) {
+		PortalData^ portalData = readPortalAt(portalZRef);
+		if (portalData != nullptr) result->Add(portalData);
+
+		portalZRef += 0x8;
+		int prevIndex = portalIndex;
+		portalIndex = (int)ReadMultiPointerSigned(PortalListBase, 3, 0x4, portalZRef, 0x0);
+		if (portalIndex != (prevIndex + 1)) nextPortalExists = false;
+	}
+	return result;
+}
+
+void MainForm::PortalTeleportByDirection() {
+	int charX = ReadPointerSignedInt(UserLocalBase, OFS_CharX);
+
+	bool leftKey = (GetAsyncKeyState(VK_LEFT) & 0x8000) != 0;
+	bool rightKey = (GetAsyncKeyState(VK_RIGHT) & 0x8000) != 0;
+
+	static int cycleIndex = 0;
+	static int lastSide = 0;
+
+	int side = 0;
+	if (rightKey && !leftKey) side = 1;
+	else if (leftKey && !rightKey) side = -1;
+	else if (rightKey) side = 1;
+	else if (leftKey) side = -1;
+	else if (lastSide != 0) side = lastSide;
+	else return;
+
+	if (side == lastSide) cycleIndex++;
+	else {
+		cycleIndex = 0;
+		lastSide = side;
+	}
+
+	Generic::List<PortalData^>^ filtered = gcnew Generic::List<PortalData^>();
+	for each (PortalData^ portal in getCurrentMapPortals()) {
+		if (side > 0 && portal->xPos > charX) filtered->Add(portal);
+		else if (side < 0 && portal->xPos < charX) filtered->Add(portal);
+	}
+	if (filtered->Count == 0) return;
+
+	for (int i = 0; i < filtered->Count - 1; i++) {
+		int nearest = i;
+		for (int j = i + 1; j < filtered->Count; j++) {
+			int distJ = Math::Abs(filtered[j]->xPos - charX);
+			int distNearest = Math::Abs(filtered[nearest]->xPos - charX);
+			if (distJ < distNearest) nearest = j;
+		}
+		if (nearest != i) {
+			PortalData^ temp = filtered[i];
+			filtered[i] = filtered[nearest];
+			filtered[nearest] = temp;
+		}
+	}
+
+	PortalData^ target = filtered[cycleIndex % filtered->Count];
+	Teleport(target->xPos, target->yPos - 10);
+}
+
 //Returns correct portal data (reading client's mem) in the case the stored values are incorrect
 PortalData^ findPortal(int toMapID) {
 	short portalZRef = 0x4; //First portal
@@ -2551,13 +2632,7 @@ PortalData^ findPortal(int toMapID) {
 	while(nextPortalExists) {
 		int currMap = ReadMultiPointerSigned(PortalListBase, 3, 0x4, portalZRef, 0x1C);
 		if(currMap == toMapID) {
-			PortalData^ newPortalData = gcnew PortalData();
-			char* portalName = ReadMultiPointerString(PortalListBase, 3, 0x4, portalZRef, 0x4);
-			newPortalData->portalName = gcnew System::String(portalName);
-			newPortalData->portalType = ReadMultiPointerSigned(PortalListBase, 3, 0x4, portalZRef, 0x8);
-			newPortalData->xPos = ReadMultiPointerSigned(PortalListBase, 3, 0x4, portalZRef, 0xC);
-			newPortalData->yPos = ReadMultiPointerSigned(PortalListBase, 3, 0x4, portalZRef, 0x10);
-			return newPortalData;
+			return readPortalAt(portalZRef);
 		}
 		
 		//Check next portal

@@ -6,6 +6,7 @@
 #define HOTKEY_CLICKTP_ID 0x9002
 #define HOTKEY_MOUSETP_ID 0x9003
 #define HOTKEY_ATKDELAY_ID 0x9004
+#define HOTKEY_PORTALTP_ID 0x9005
 
 namespace Timelapse {
 
@@ -36,7 +37,7 @@ namespace Timelapse {
 			}
 		}
 	protected:
-		//捕获全局热键(WM_HOTKEY = 0x0312)：F9 复位窗体；F3/F4/F1 翻转对应功能复选框
+		//捕获全局热键(WM_HOTKEY = 0x0312)：F9 复位窗体；F3/F4/F1 翻转对应功能；F5 方向传送门瞬移
 		virtual void WndProc(System::Windows::Forms::Message% m) override {
 			if (m.Msg == 0x0312) {
 				switch (m.WParam.ToInt32()) {
@@ -52,10 +53,14 @@ namespace Timelapse {
 					case HOTKEY_ATKDELAY_ID:
 						this->cbAttackDelay->Checked = !this->cbAttackDelay->Checked;
 						break;
+					case HOTKEY_PORTALTP_ID:
+						PortalTeleportByDirection();
+						break;
 				}
 			}
 			System::Windows::Forms::Form::WndProc(m);
 		}
+		void PortalTeleportByDirection();
 		//把窗体拉回屏幕中央并置顶显示，确保随时能找回外挂窗口
 		void RecenterToScreen() {
 			System::Drawing::Rectangle area = System::Windows::Forms::Screen::PrimaryScreen->WorkingArea;
