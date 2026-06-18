@@ -1,0 +1,92 @@
+name: Build Timelapse DLL (Release Win32)
+
+# 在 GitHub 云端 Windows 机器上编译 32 位 Timelapse.dll，本机无需安装 VS。
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    env:
+      SOLUTION: Timelapse.sln
+      # 工程原为 v141(VS2017)，windows-2022 仅自带 v143(VS2022)，此处命令行覆盖，不改动工程文件。
+      TOOLSET: v143
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      # 设置 x86 (32 位) 的 MSVC 开发环境，供 nmake 编译 Detours 使用。
+      - name: Setup MSVC dev environment (x86)
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x86
+
+      # 工程引用了 detours.lib 但仓库缺失，这里从官方源码现编译出 32 位静态库。
+      - name: Build Microsoft Detours (x86) and provide detours.lib
+        shell: cmd
+        run: |
+          git clone --depth 1 --branch v4.0.1 https://github.com/microsoft/Detours.git detours-src || git clone --depth 1 https://github.com/microsoft/Detours.git detours-src
+          pushd detours-src
+          set DETOURS_TARGET_PROCESSOR=X86
+          nmake
+          popd
+          if not exist "detours-src\lib.X86\detours.lib" (
+            echo ERROR: detours.lib was not produced.
+            dir /s detours-src\*.lib
+            exit /b 1
+          )
+          copy /Y "detours-src\lib.X86\detours.lib" "Timelapse\detours.lib"
+          echo Detours x86 static library is ready.
+
+      # windows-2022 上没有工程指定的 10.0.17763.0 SDK，动态探测一个可用版本传给 MSBuild。
+      - name: Detect installed Windows 10 SDK version
+        shell: pwsh
+        run: |
+          $sdkRoot = "C:\Program Files (x86)\Windows Kits\10\Include"
+          if (-not (Test-Path $sdkRoot)) { throw "Windows SDK include root not found: $sdkRoot" }
+          $latest = Get-ChildItem $sdkRoot -Directory |
+            Where-Object { $_.Name -match '^10\.' } |
+            Sort-Object { [version]$_.Name } |
+            Select-Object -Last 1
+          if (-not $latest) { throw "No Windows 10 SDK found under $sdkRoot" }
+          Write-Host "Using Windows SDK version: $($latest.Name)"
+          "WINSDK_VERSION=$($latest.Name)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Build Timelapse (Release | Win32)
+        shell: cmd
+        run: >
+          msbuild "%SOLUTION%"
+          /m
+          /nologo
+          /p:Configuration=Release
+          /p:Platform=x86
+          /p:PlatformToolset=%TOOLSET%
+          /p:WindowsTargetPlatformVersion=%WINSDK_VERSION%
+          /verbosity:minimal
+
+      - name: Collect build output
+        shell: pwsh
+        run: |
+          $dll = Get-ChildItem -Path . -Recurse -Filter Timelapse.dll -ErrorAction SilentlyContinue |
+            Where-Object { $_.FullName -match 'Release' } |
+            Select-Object -First 1
+          if (-not $dll) { throw "Timelapse.dll was not found after build." }
+          Write-Host "Built DLL: $($dll.FullName)"
+          New-Item -ItemType Directory -Force -Path artifact | Out-Null
+          Copy-Item $dll.FullName artifact\Timelapse.dll -Force
+
+      - name: Upload Timelapse.dll
+        uses: actions/upload-artifact@v4
+        with:
+          name: Timelapse-dll-Release-Win32
+          path: artifact/Timelapse.dll
+          if-no-files-found: error
