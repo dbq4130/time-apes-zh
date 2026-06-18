@@ -9,6 +9,7 @@
 #include "Settings.h"
 #include "Log.h"
 #include "Hooks.h"
+#include "MapTranslations.h"
 
 [assembly:System::Diagnostics::DebuggableAttribute(true, true)]; //For debugging purposes
 
@@ -2420,15 +2421,15 @@ static void loadMaps() {
 
 			//Get Map's Island Name
 			tempString = strReader->ReadLine();
-			tempMapData->islandName = tempString->Substring(7);
+			tempMapData->islandName = MapTranslations::Island(tempString->Substring(7));
 
 			//Get Map's Street Name
 			tempString = strReader->ReadLine();
-			tempMapData->streetName = tempString->Substring(11);
+			tempMapData->streetName = MapTranslations::Street(tempString->Substring(11));
 
 			//Get Map's Street Name
 			tempString = strReader->ReadLine();
-			tempMapData->mapName = tempString->Substring(8);
+			tempMapData->mapName = MapTranslations::Map(tempString->Substring(8));
 
 			//Get the number of portals in Map
 			tempString = strReader->ReadLine();
