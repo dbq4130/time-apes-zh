@@ -99,11 +99,11 @@ void MainForm::MainForm_Load(Object^  sender, EventArgs^  e) {
 
 	//注册 F9 全局热键：游戏全屏/窗体跑偏时，一键把窗体复位到屏幕中央
 	RegisterHotKey(static_cast<HWND>(this->Handle.ToPointer()), HOTKEY_RECENTER_ID, 0, VK_F9);
-	//功能开关全局热键：F3 点击瞬移、F4 鼠标瞬移、F1 无攻击延迟（攻速）；MOD_NOREPEAT 防长按重复触发
+	//功能开关全局热键：F3 点击瞬移、F4 鼠标瞬移、F1 攻击延迟（攻速）；MOD_NOREPEAT 防长按重复触发
 	HWND hWndSelf = static_cast<HWND>(this->Handle.ToPointer());
 	RegisterHotKey(hWndSelf, HOTKEY_CLICKTP_ID, MOD_NOREPEAT, VK_F3);
 	RegisterHotKey(hWndSelf, HOTKEY_MOUSETP_ID, MOD_NOREPEAT, VK_F4);
-	RegisterHotKey(hWndSelf, HOTKEY_NOATKDELAY_ID, MOD_NOREPEAT, VK_F1);
+	RegisterHotKey(hWndSelf, HOTKEY_ATKDELAY_ID, MOD_NOREPEAT, VK_F1);
 }
 
 void MainForm::MainForm_Shown(Object^  sender, EventArgs^  e) {

@@ -2,10 +2,10 @@
 
 //F9 复位热键 ID（自定义值，避免与系统/游戏热键冲突）
 #define HOTKEY_RECENTER_ID 0x9001
-//功能开关热键 ID：F3 点击瞬移、F4 鼠标瞬移、F1 无攻击延迟（攻速）
+//功能开关热键 ID：F3 点击瞬移、F4 鼠标瞬移、F1 攻击延迟（攻速）
 #define HOTKEY_CLICKTP_ID 0x9002
 #define HOTKEY_MOUSETP_ID 0x9003
-#define HOTKEY_NOATKDELAY_ID 0x9004
+#define HOTKEY_ATKDELAY_ID 0x9004
 
 namespace Timelapse {
 
@@ -49,8 +49,8 @@ namespace Timelapse {
 					case HOTKEY_MOUSETP_ID:
 						this->cbMouseTeleport->Checked = !this->cbMouseTeleport->Checked;
 						break;
-					case HOTKEY_NOATKDELAY_ID:
-						this->cbNoAttackDelay->Checked = !this->cbNoAttackDelay->Checked;
+					case HOTKEY_ATKDELAY_ID:
+						this->cbAttackDelay->Checked = !this->cbAttackDelay->Checked;
 						break;
 				}
 			}
