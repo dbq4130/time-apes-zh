@@ -170,6 +170,7 @@ namespace Timelapse {
 	private: System::Windows::Forms::CheckBox^  cbPortalTeleport;
 	private: System::Windows::Forms::CheckBox^  cbQingGong;
 	private: System::Windows::Forms::CheckBox^  cbWenRuTaiShan;
+	private: System::Windows::Forms::Label^  lblHotkeyHint;
 	private: System::Windows::Forms::CheckBox^  cbFullGodmode;
 	private: System::Windows::Forms::Panel^  panel16;
 public: System::Windows::Forms::TextBox^  tbDupeXFoothold;
@@ -715,6 +716,7 @@ public:
 			this->cbPortalTeleport = (gcnew System::Windows::Forms::CheckBox());
 			this->cbQingGong = (gcnew System::Windows::Forms::CheckBox());
 			this->cbWenRuTaiShan = (gcnew System::Windows::Forms::CheckBox());
+			this->lblHotkeyHint = (gcnew System::Windows::Forms::Label());
 			this->label50 = (gcnew System::Windows::Forms::Label());
 			this->cbSwimInAir = (gcnew System::Windows::Forms::CheckBox());
 			this->tbMouseTeleport = (gcnew System::Windows::Forms::TextBox());
@@ -2019,8 +2021,6 @@ public:
 			this->tabControl1->Controls->Add(this->tabPage2);
 			this->tabControl1->Controls->Add(this->tabPage5);
 			this->tabControl1->Controls->Add(this->tabPage20);
-			this->tabControl1->Controls->Add(this->tabPage6);
-			this->tabControl1->Controls->Add(this->tabPage7);
 			this->tabControl1->Controls->Add(this->tabPage8);
 			this->tabControl1->Controls->Add(this->tabPage9);
 			this->tabControl1->ForeColor = System::Drawing::Color::White;
@@ -3308,18 +3308,17 @@ public:
 			// 
 			this->tabPage5->BackColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(25)), static_cast<System::Int32>(static_cast<System::Byte>(25)),
 				static_cast<System::Int32>(static_cast<System::Byte>(25)));
-			this->tabPage5->Controls->Add(this->groupBox6);
-			this->tabPage5->Controls->Add(this->groupBox5);
 			this->tabPage5->Controls->Add(this->groupBox4);
-			this->tabPage5->Controls->Add(this->groupBox3);
-			this->tabPage5->Controls->Add(this->groupBox2);
 			this->tabPage5->Controls->Add(this->groupBox1);
+			this->tabPage5->Controls->Add(this->groupBox2);
+			this->tabPage5->Controls->Add(this->groupBox5);
+			this->tabPage5->Controls->Add(this->groupBox6);
 			this->tabPage5->Location = System::Drawing::Point(4, 22);
 			this->tabPage5->Name = L"tabPage5";
 			this->tabPage5->Padding = System::Windows::Forms::Padding(3);
 			this->tabPage5->Size = System::Drawing::Size(390, 385);
 			this->tabPage5->TabIndex = 2;
-			this->tabPage5->Text = L"功能 I";
+			this->tabPage5->Text = L"常用功能";
 			// 
 			// groupBox6
 			// 
@@ -3464,6 +3463,8 @@ public:
 			// 
 			// groupBox4
 			// 
+			this->groupBox4->Controls->Add(this->lblHotkeyHint);
+			this->groupBox4->Controls->Add(this->cbUnlimitedAttack);
 			this->groupBox4->Controls->Add(this->cbWenRuTaiShan);
 			this->groupBox4->Controls->Add(this->cbQingGong);
 			this->groupBox4->Controls->Add(this->cbPortalTeleport);
@@ -3476,12 +3477,12 @@ public:
 			this->groupBox4->Controls->Add(this->tbMouseTeleport);
 			this->groupBox4->Controls->Add(this->tbClickTeleport);
 			this->groupBox4->ForeColor = System::Drawing::Color::WhiteSmoke;
-			this->groupBox4->Location = System::Drawing::Point(6, 313);
+			this->groupBox4->Location = System::Drawing::Point(6, 4);
 			this->groupBox4->Name = L"groupBox4";
-			this->groupBox4->Size = System::Drawing::Size(378, 128);
+			this->groupBox4->Size = System::Drawing::Size(378, 108);
 			this->groupBox4->TabIndex = 26;
 			this->groupBox4->TabStop = false;
-			this->groupBox4->Text = L"移动类";
+			this->groupBox4->Text = L"常用功能";
 			// 
 			// cbMouseFly
 			// 
@@ -3507,7 +3508,7 @@ public:
 			this->cbClickTeleport->Name = L"cbClickTeleport";
 			this->cbClickTeleport->Size = System::Drawing::Size(87, 17);
 			this->cbClickTeleport->TabIndex = 1;
-			this->cbClickTeleport->Text = L"点击瞬移";
+			this->cbClickTeleport->Text = L"点击瞬移(F3)";
 			this->cbClickTeleport->UseVisualStyleBackColor = false;
 			this->cbClickTeleport->CheckedChanged += gcnew System::EventHandler(this, &MainForm::cbClickTeleport_CheckedChanged);
 			// 
@@ -3530,7 +3531,7 @@ public:
 			this->cbMouseTeleport->Name = L"cbMouseTeleport";
 			this->cbMouseTeleport->Size = System::Drawing::Size(97, 17);
 			this->cbMouseTeleport->TabIndex = 2;
-			this->cbMouseTeleport->Text = L"鼠标瞬移";
+			this->cbMouseTeleport->Text = L"鼠标瞬移(F4)";
 			this->cbMouseTeleport->UseVisualStyleBackColor = false;
 			this->cbMouseTeleport->CheckedChanged += gcnew System::EventHandler(this, &MainForm::cbMouseTeleport_CheckedChanged);
 			// 
@@ -3553,7 +3554,7 @@ public:
 			this->cbQingGong->FlatAppearance->BorderColor = System::Drawing::Color::Maroon;
 			this->cbQingGong->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
 			this->cbQingGong->ForeColor = System::Drawing::Color::White;
-			this->cbQingGong->Location = System::Drawing::Point(130, 58);
+			this->cbQingGong->Location = System::Drawing::Point(120, 58);
 			this->cbQingGong->Name = L"cbQingGong";
 			this->cbQingGong->Size = System::Drawing::Size(60, 17);
 			this->cbQingGong->TabIndex = 11;
@@ -3567,13 +3568,23 @@ public:
 			this->cbWenRuTaiShan->FlatAppearance->BorderColor = System::Drawing::Color::Maroon;
 			this->cbWenRuTaiShan->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
 			this->cbWenRuTaiShan->ForeColor = System::Drawing::Color::White;
-			this->cbWenRuTaiShan->Location = System::Drawing::Point(251, 58);
+			this->cbWenRuTaiShan->Location = System::Drawing::Point(185, 58);
 			this->cbWenRuTaiShan->Name = L"cbWenRuTaiShan";
 			this->cbWenRuTaiShan->Size = System::Drawing::Size(84, 17);
 			this->cbWenRuTaiShan->TabIndex = 12;
 			this->cbWenRuTaiShan->Text = L"稳如泰山";
 			this->cbWenRuTaiShan->UseVisualStyleBackColor = false;
 			this->cbWenRuTaiShan->CheckedChanged += gcnew System::EventHandler(this, &MainForm::cbWenRuTaiShan_CheckedChanged);
+			// 
+			// lblHotkeyHint
+			// 
+			this->lblHotkeyHint->AutoSize = true;
+			this->lblHotkeyHint->ForeColor = System::Drawing::Color::Silver;
+			this->lblHotkeyHint->Location = System::Drawing::Point(10, 82);
+			this->lblHotkeyHint->Name = L"lblHotkeyHint";
+			this->lblHotkeyHint->Size = System::Drawing::Size(360, 13);
+			this->lblHotkeyHint->TabIndex = 13;
+			this->lblHotkeyHint->Text = L"快捷键: F9窗体复位 | F1攻击延迟 | 传送门开启后双击←或→";
 			// 
 			// label50
 			// 
@@ -3595,6 +3606,7 @@ public:
 			this->cbSwimInAir->Size = System::Drawing::Size(76, 17);
 			this->cbSwimInAir->TabIndex = 7;
 			this->cbSwimInAir->Text = L"空中游泳";
+			this->cbSwimInAir->Visible = false;
 			this->cbSwimInAir->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
 			this->cbSwimInAir->UseVisualStyleBackColor = false;
 			this->cbSwimInAir->CheckedChanged += gcnew System::EventHandler(this, &MainForm::cbSwimInAir_CheckedChanged);
@@ -3642,6 +3654,7 @@ public:
 			this->groupBox3->TabIndex = 25;
 			this->groupBox3->TabStop = false;
 			this->groupBox3->Text = L"怪物类";
+			this->groupBox3->Visible = false;
 			// 
 			// cbMobAutoAggro
 			// 
@@ -3735,7 +3748,7 @@ public:
 			this->groupBox2->Controls->Add(this->cbItemVac);
 			this->groupBox2->Controls->Add(this->cbInstantLootItems);
 			this->groupBox2->ForeColor = System::Drawing::Color::WhiteSmoke;
-			this->groupBox2->Location = System::Drawing::Point(6, 253);
+			this->groupBox2->Location = System::Drawing::Point(6, 290);
 			this->groupBox2->Name = L"groupBox2";
 			this->groupBox2->Size = System::Drawing::Size(236, 55);
 			this->groupBox2->TabIndex = 24;
@@ -3819,9 +3832,8 @@ public:
 			this->groupBox1->Controls->Add(this->cbNoPlayerKnockback);
 			this->groupBox1->Controls->Add(this->cbFullAccuracy);
 			this->groupBox1->Controls->Add(this->cbNoPlayerDeath);
-			this->groupBox1->Controls->Add(this->cbUnlimitedAttack);
 			this->groupBox1->ForeColor = System::Drawing::Color::WhiteSmoke;
-			this->groupBox1->Location = System::Drawing::Point(6, 4);
+			this->groupBox1->Location = System::Drawing::Point(6, 118);
 			this->groupBox1->Name = L"groupBox1";
 			this->groupBox1->Size = System::Drawing::Size(236, 169);
 			this->groupBox1->TabIndex = 23;
@@ -3928,7 +3940,7 @@ public:
 			this->cbAttackDelay->Name = L"cbAttackDelay";
 			this->cbAttackDelay->Size = System::Drawing::Size(84, 17);
 			this->cbAttackDelay->TabIndex = 42;
-			this->cbAttackDelay->Text = L"攻击延迟";
+			this->cbAttackDelay->Text = L"攻击延迟(F1)";
 			this->cbAttackDelay->UseVisualStyleBackColor = false;
 			this->cbAttackDelay->CheckedChanged += gcnew System::EventHandler(this, &MainForm::cbAttackDelay_CheckedChanged);
 			// 
@@ -4080,7 +4092,7 @@ public:
 			this->cbUnlimitedAttack->FlatAppearance->BorderColor = System::Drawing::Color::Maroon;
 			this->cbUnlimitedAttack->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
 			this->cbUnlimitedAttack->ForeColor = System::Drawing::Color::White;
-			this->cbUnlimitedAttack->Location = System::Drawing::Point(10, 34);
+			this->cbUnlimitedAttack->Location = System::Drawing::Point(275, 58);
 			this->cbUnlimitedAttack->Name = L"cbUnlimitedAttack";
 			this->cbUnlimitedAttack->Size = System::Drawing::Size(100, 17);
 			this->cbUnlimitedAttack->TabIndex = 6;
