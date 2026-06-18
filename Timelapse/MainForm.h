@@ -2,6 +2,10 @@
 
 //F9 复位热键 ID（自定义值，避免与系统/游戏热键冲突）
 #define HOTKEY_RECENTER_ID 0x9001
+//功能开关热键 ID：F3 点击瞬移、F4 鼠标瞬移、F1 无攻击延迟（攻速）
+#define HOTKEY_CLICKTP_ID 0x9002
+#define HOTKEY_MOUSETP_ID 0x9003
+#define HOTKEY_NOATKDELAY_ID 0x9004
 
 namespace Timelapse {
 
@@ -32,10 +36,23 @@ namespace Timelapse {
 			}
 		}
 	protected:
-		//捕获 F9 全局热键(WM_HOTKEY = 0x0312)，把窗体复位到屏幕中央
+		//捕获全局热键(WM_HOTKEY = 0x0312)：F9 复位窗体；F3/F4/F1 翻转对应功能复选框
 		virtual void WndProc(System::Windows::Forms::Message% m) override {
-			if (m.Msg == 0x0312 && m.WParam.ToInt32() == HOTKEY_RECENTER_ID) {
-				RecenterToScreen();
+			if (m.Msg == 0x0312) {
+				switch (m.WParam.ToInt32()) {
+					case HOTKEY_RECENTER_ID:
+						RecenterToScreen();
+						break;
+					case HOTKEY_CLICKTP_ID:
+						this->cbClickTeleport->Checked = !this->cbClickTeleport->Checked;
+						break;
+					case HOTKEY_MOUSETP_ID:
+						this->cbMouseTeleport->Checked = !this->cbMouseTeleport->Checked;
+						break;
+					case HOTKEY_NOATKDELAY_ID:
+						this->cbNoAttackDelay->Checked = !this->cbNoAttackDelay->Checked;
+						break;
+				}
 			}
 			System::Windows::Forms::Form::WndProc(m);
 		}
