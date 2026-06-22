@@ -100,11 +100,10 @@ void MainForm::MainForm_Load(Object^  sender, EventArgs^  e) {
 
 	//注册 F9 全局热键：游戏全屏/窗体跑偏时，一键把窗体复位到屏幕中央
 	RegisterHotKey(static_cast<HWND>(this->Handle.ToPointer()), HOTKEY_RECENTER_ID, 0, VK_F9);
-	//功能开关全局热键：F3 点击瞬移、F4 鼠标瞬移、F1 攻击延迟、F5 传送门瞬移开关
+	//功能开关全局热键：F3 点击瞬移、F4 鼠标瞬移、F5 传送门瞬移开关
 	HWND hWndSelf = static_cast<HWND>(this->Handle.ToPointer());
 	RegisterHotKey(hWndSelf, HOTKEY_CLICKTP_ID, MOD_NOREPEAT, VK_F3);
 	RegisterHotKey(hWndSelf, HOTKEY_MOUSETP_ID, MOD_NOREPEAT, VK_F4);
-	RegisterHotKey(hWndSelf, HOTKEY_ATKDELAY_ID, MOD_NOREPEAT, VK_F1);
 	RegisterHotKey(hWndSelf, HOTKEY_PORTALTP_ID, MOD_NOREPEAT, VK_F5);
 }
 
@@ -402,25 +401,26 @@ void MainForm::GUITimer_Tick(Object^  sender, EventArgs^  e) {
 		lbItemCount->Text = PointerFuncs::getItemCount();
 		lbPortalCount->Text = PointerFuncs::getPortalCount();
 		lbNPCCount->Text = PointerFuncs::getNPCCount();
-
-		if (cbPortalTeleport->Checked) {
-			static DWORD leftLastPress = 0;
-			static DWORD rightLastPress = 0;
-			const DWORD doubleTapMs = 400;
-			DWORD now = GetTickCount();
-
-			if (GetAsyncKeyState(VK_LEFT) & 1) {
-				if (leftLastPress != 0 && now - leftLastPress < doubleTapMs)
-					PortalTeleportByDirection(-1);
-				leftLastPress = now;
-			}
-			if (GetAsyncKeyState(VK_RIGHT) & 1) {
-				if (rightLastPress != 0 && now - rightLastPress < doubleTapMs)
-					PortalTeleportByDirection(1);
-				rightLastPress = now;
-			}
-		}
 	}
+}
+
+//以 25ms 高频轮询数字键 9/0：用「上一帧未按下、本帧按下」的上升沿判断真实按键，
+//按 9 往左传送门瞬移、按 0 往右传送门瞬移。单击即触发，比方向键双击灵敏稳定。
+void MainForm::tPortalDetect_Tick(Object^  sender, EventArgs^  e) {
+	if (!cbPortalTeleport->Checked) return;
+	if (!HelperFuncs::IsInGame()) return;
+
+	static bool leftWasDown = false;
+	static bool rightWasDown = false;
+
+	bool leftDown = (GetAsyncKeyState('9') & 0x8000) != 0;  //9 = 左传送门
+	bool rightDown = (GetAsyncKeyState('0') & 0x8000) != 0; //0 = 右传送门
+
+	if (leftDown && !leftWasDown) PortalTeleportByDirection(-1);
+	if (rightDown && !rightWasDown) PortalTeleportByDirection(1);
+
+	leftWasDown = leftDown;
+	rightWasDown = rightDown;
 }
 #pragma endregion
 

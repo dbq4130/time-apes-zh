@@ -2,10 +2,9 @@
 
 //F9 复位热键 ID（自定义值，避免与系统/游戏热键冲突）
 #define HOTKEY_RECENTER_ID 0x9001
-//功能开关热键 ID：F3 点击瞬移、F4 鼠标瞬移、F1 攻击延迟、F5 传送门瞬移开关
+//功能开关热键 ID：F3 点击瞬移、F4 鼠标瞬移、F5 传送门瞬移开关
 #define HOTKEY_CLICKTP_ID 0x9002
 #define HOTKEY_MOUSETP_ID 0x9003
-#define HOTKEY_ATKDELAY_ID 0x9004
 #define HOTKEY_PORTALTP_ID 0x9005
 
 namespace Timelapse {
@@ -37,7 +36,7 @@ namespace Timelapse {
 			}
 		}
 	protected:
-		//捕获全局热键(WM_HOTKEY = 0x0312)：F9 复位窗体；F3/F4/F1/F5 翻转对应功能；开启传送门瞬移后双击方向键触发
+		//捕获全局热键(WM_HOTKEY = 0x0312)：F9 复位窗体；F3/F4/F5 翻转对应功能；开启传送门瞬移后按 9/0 触发左右瞬移
 		virtual void WndProc(System::Windows::Forms::Message% m) override {
 			if (m.Msg == 0x0312) {
 				switch (m.WParam.ToInt32()) {
@@ -49,9 +48,6 @@ namespace Timelapse {
 						break;
 					case HOTKEY_MOUSETP_ID:
 						this->cbMouseTeleport->Checked = !this->cbMouseTeleport->Checked;
-						break;
-					case HOTKEY_ATKDELAY_ID:
-						this->cbAttackDelay->Checked = !this->cbAttackDelay->Checked;
 						break;
 					case HOTKEY_PORTALTP_ID:
 						this->cbPortalTeleport->Checked = !this->cbPortalTeleport->Checked;
@@ -133,6 +129,8 @@ namespace Timelapse {
 	private: System::Windows::Forms::Label^  lbLevel;
 	private: System::Windows::Forms::Label^  lbCharName;
 	private: System::Windows::Forms::Timer^  GUITimer;
+	//高频轮询方向键，用于传送门双击检测（GUITimer 250ms 太慢，连点会落在同一帧里漏检）
+	private: System::Windows::Forms::Timer^  tPortalDetect;
 	public: System::Windows::Forms::Label^  lbMapName;
 	private:
 
@@ -947,6 +945,7 @@ public:
 			this->label78 = (gcnew System::Windows::Forms::Label());
 			this->btnClose = (gcnew System::Windows::Forms::Button());
 			this->GUITimer = (gcnew System::Windows::Forms::Timer(this->components));
+			this->tPortalDetect = (gcnew System::Windows::Forms::Timer(this->components));
 			this->AutoCCCSTimer = (gcnew System::Windows::Forms::Timer(this->components));
 			this->tAutoAttack = (gcnew System::Windows::Forms::Timer(this->components));
 			this->tAutoLoot = (gcnew System::Windows::Forms::Timer(this->components));
@@ -3584,7 +3583,7 @@ public:
 			this->lblHotkeyHint->Name = L"lblHotkeyHint";
 			this->lblHotkeyHint->Size = System::Drawing::Size(360, 13);
 			this->lblHotkeyHint->TabIndex = 13;
-			this->lblHotkeyHint->Text = L"快捷键: F9窗体复位 | F1攻击延迟 | 传送门开启后双击←或→";
+			this->lblHotkeyHint->Text = L"快捷键: F9窗体复位 | 传送门开启后按9左传送/0右传送";
 			// 
 			// label50
 			// 
@@ -3940,7 +3939,7 @@ public:
 			this->cbAttackDelay->Name = L"cbAttackDelay";
 			this->cbAttackDelay->Size = System::Drawing::Size(84, 17);
 			this->cbAttackDelay->TabIndex = 42;
-			this->cbAttackDelay->Text = L"攻击延迟(F1)";
+			this->cbAttackDelay->Text = L"攻击延迟";
 			this->cbAttackDelay->UseVisualStyleBackColor = false;
 			this->cbAttackDelay->CheckedChanged += gcnew System::EventHandler(this, &MainForm::cbAttackDelay_CheckedChanged);
 			// 
@@ -6697,6 +6696,7 @@ public:
 	private: System::Void pnlFull_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
 	private: System::Void pnlFull_MouseMove(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e);
 	private: System::Void GUITimer_Tick(System::Object^  sender, System::EventArgs^  e);
+	private: System::Void tPortalDetect_Tick(System::Object^  sender, System::EventArgs^  e);
 	private: System::Void closeMapleStoryToolStripMenuItem_Click(System::Object^  sender, System::EventArgs^  e);
 	private: System::Void loadSettingsToolStripMenuItem_Click(System::Object^  sender, System::EventArgs^  e);
 	private: System::Void saveSettingsToolStripMenuItem_Click(System::Object^  sender, System::EventArgs^  e);
