@@ -14,6 +14,8 @@ namespace Timelapse {
 			static void Serialize(Control^ c, String^ Path);
 			static bool isExcluded(Control^ ctrl);
 			static String^ GetSettingsPath();
+			static String^ GetBuffsPath();
+			static void EnsureDirectory();
 
 		private:
 			static void AddChildControls(XmlTextWriter^ xmlSerialisedForm, Control^ c);

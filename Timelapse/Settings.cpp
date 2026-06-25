@@ -189,3 +189,29 @@ String^ Settings::GetSettingsPath() {
 	Log::WriteLine("Generated path to Timelapse settings file at" + ": " + SettingsFilePath);
 	return SettingsFilePath;
 }
+
+// 自动 Buff 列表用单独文件保存(ListView 无法被通用序列化器处理)
+String^ Settings::GetBuffsPath() {
+	String^ AppDataFolder = Environment::GetFolderPath(Environment::SpecialFolder::ApplicationData);
+	try {
+		String^ TimelapseFolderPath = Path::Combine(AppDataFolder, "Timelapse");
+		return Path::Combine(TimelapseFolderPath, "Buffs.txt");
+	}
+	catch (Exception^ ex) {
+		Log::WriteLine("Exception occured while generating path to buffs file" + ex->Message);
+	}
+	return nullptr;
+}
+
+// 确保 %AppData%\Timelapse 目录存在，否则保存会静默失败
+void Settings::EnsureDirectory() {
+	try {
+		String^ AppDataFolder = Environment::GetFolderPath(Environment::SpecialFolder::ApplicationData);
+		String^ TimelapseFolderPath = Path::Combine(AppDataFolder, "Timelapse");
+		if (!Directory::Exists(TimelapseFolderPath))
+			Directory::CreateDirectory(TimelapseFolderPath);
+	}
+	catch (Exception^ ex) {
+		Log::WriteLine("Exception occured while ensuring settings directory" + ex->Message);
+	}
+}

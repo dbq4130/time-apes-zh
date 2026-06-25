@@ -39,6 +39,8 @@ static std::vector<SpawnControlData*> *spawnControl = new std::vector<SpawnContr
 static std::vector<COutPacket> *sendPacketLogQueue = new std::vector<COutPacket>();
 SendPacketData *sendPacketData;
 ULONG dupeXFoothold = 0;
+ULONG missCounter = 0, missThreshold = 0; //Miss Godmode: configurable miss count
+ULONG crcCopyAddr = 0; //MSCRC Bypass: address of the allocated copy of the code section
 
 //Find item name using item ID in the ItemsList resource
 static String^ findItemNameFromID(int itemID) {
@@ -261,6 +263,124 @@ inline void __stdcall addSendPacket() {
 		jmp dword ptr[mouseFlyYAddrRet]
 	} EndCodeCave
 
+	//Click Teleport - same as MouseFly but only when MouseAnimation == 12 (click)
+	CodeCave(ClickTeleportXHook) {
+		push eax
+		push ecx
+		mov eax, [UserLocalBase]
+		mov eax, [eax]
+		mov ecx, [OFS_pID]
+		mov eax, [eax + ecx]
+		cmp esi, eax
+		pop eax
+		jne ClickReturnX
+		mov eax, [InputBase]
+		mov eax, [eax]
+		mov ecx, [OFS_MouseAnimation]
+		cmp dword ptr [eax + ecx], 0x0C
+		jne ClickReturnX
+		mov eax, [InputBase]
+		mov eax, [eax]
+		mov ecx, [OFS_MouseLocation]
+		mov eax, [eax + ecx]
+		mov ecx, [OFS_MouseX]
+		mov eax, [eax + ecx]
+
+		ClickReturnX:
+		pop ecx
+		mov [ebx], eax
+		mov edi, [ebp + 0x10]
+		jmp dword ptr[mouseFlyXAddrRet]
+	} EndCodeCave
+
+	CodeCave(ClickTeleportYHook) {
+		push eax
+		push ecx
+		mov eax, [UserLocalBase]
+		mov eax, [eax]
+		mov ecx, [OFS_pID]
+		mov eax, [eax + ecx]
+		cmp esi, eax
+		pop eax
+		jne ClickReturnY
+		mov eax, [InputBase]
+		mov eax, [eax]
+		mov ecx, [OFS_MouseAnimation]
+		cmp dword ptr [eax + ecx], 0x0C
+		jne ClickReturnY
+		mov eax, [InputBase]
+		mov eax, [eax]
+		mov ecx, [OFS_MouseLocation]
+		mov eax, [eax + ecx]
+		mov ecx, [OFS_MouseY]
+		mov eax, [eax + ecx]
+
+		ClickReturnY:
+		pop ecx
+		mov [edi], eax
+		mov ebx, [ebp + 0x14]
+		jmp dword ptr[mouseFlyYAddrRet]
+	} EndCodeCave
+
+	//Mouse Teleport - same as MouseFly but only when MouseAnimation == 0 (move)
+	CodeCave(MouseTeleportXHook) {
+		push eax
+		push ecx
+		mov eax, [UserLocalBase]
+		mov eax, [eax]
+		mov ecx, [OFS_pID]
+		mov eax, [eax + ecx]
+		cmp esi, eax
+		pop eax
+		jne MouseTeleReturnX
+		mov eax, [InputBase]
+		mov eax, [eax]
+		mov ecx, [OFS_MouseAnimation]
+		cmp dword ptr [eax + ecx], 0x00
+		jne MouseTeleReturnX
+		mov eax, [InputBase]
+		mov eax, [eax]
+		mov ecx, [OFS_MouseLocation]
+		mov eax, [eax + ecx]
+		mov ecx, [OFS_MouseX]
+		mov eax, [eax + ecx]
+
+		MouseTeleReturnX:
+		pop ecx
+		mov [ebx], eax
+		mov edi, [ebp + 0x10]
+		jmp dword ptr[mouseFlyXAddrRet]
+	} EndCodeCave
+
+	CodeCave(MouseTeleportYHook) {
+		push eax
+		push ecx
+		mov eax, [UserLocalBase]
+		mov eax, [eax]
+		mov ecx, [OFS_pID]
+		mov eax, [eax + ecx]
+		cmp esi, eax
+		pop eax
+		jne MouseTeleReturnY
+		mov eax, [InputBase]
+		mov eax, [eax]
+		mov ecx, [OFS_MouseAnimation]
+		cmp dword ptr [eax + ecx], 0x00
+		jne MouseTeleReturnY
+		mov eax, [InputBase]
+		mov eax, [eax]
+		mov ecx, [OFS_MouseLocation]
+		mov eax, [eax + ecx]
+		mov ecx, [OFS_MouseY]
+		mov eax, [eax + ecx]
+
+		MouseTeleReturnY:
+		pop ecx
+		mov [edi], eax
+		mov ebx, [ebp + 0x14]
+		jmp dword ptr[mouseFlyYAddrRet]
+	} EndCodeCave
+
 	CodeCave(MobFreezeHook) {
 		mov [esi + 0x00000248], 0x06
 		mov eax, [esi + 0x00000248]
@@ -437,6 +557,114 @@ inline void __stdcall addSendPacket() {
 		popfd
 		mov[esi + 0x00000114], edi
 		jmp dword ptr[dupeXAddrRet]
+	} EndCodeCave
+
+	//Miss Godmode - replaces mov [esi],eax; add esi,04; dec [ebp-3C]
+	//When missCounter > 0: set damage to 0 (miss), decrement counter
+	//When missCounter == 0: let damage through, reset counter to missThreshold
+	CodeCave(MissGodmodeHook) {
+		pushfd
+		push eax
+		mov eax, [missCounter]
+		test eax, eax
+		jz LetDamageThrough
+		//Miss this hit
+		dec eax
+		mov [missCounter], eax
+		pop eax
+		popfd
+		mov dword ptr [esi], 0x00  //set damage to 0 (miss)
+		add esi, 0x04
+		dec dword ptr [ebp - 0x3C]
+		jmp dword ptr[missGodmodeHookAddrRet]
+
+		LetDamageThrough:
+		mov eax, [missThreshold]
+		mov [missCounter], eax  //reset counter
+		pop eax
+		popfd
+		mov [esi], eax  //let damage through (original instruction)
+		add esi, 0x04
+		dec dword ptr [ebp - 0x3C]
+		jmp dword ptr[missGodmodeHookAddrRet]
+	} EndCodeCave
+
+	//Attack Unrandomizer - replaces call at attackUnrandommizerAddr
+	//Original bytes: E8 0F 00 00 00 (call +0x0F)
+	//Overrides random damage result with maximum value
+	CodeCave(AttackUnrandomizerHook) {
+		//Execute original call instruction
+		call dword ptr[attackUnrandommizerAddr + 5 + 0x0F] //call the original target
+		//Override: always return maximum damage
+		mov eax, 0x7FFFFFFF
+		jmp dword ptr[attackUnrandommizerAddrRet]
+	} EndCodeCave
+
+	//MSCRC Bypass - redirects CRC check to read from an unmodified copy of the code section
+	//Original bytes at MSCRCBypassAddr1: 8B 55 0C 8B 02 (mov edx,[ebp+0C]; mov eax,[edx])
+	//Original byte at MSCRCBypassAddr2: 8B (mov ...)
+	CodeCave(MSCRCBypassHook) {
+		pushfd
+		push eax
+		push ebx
+		//Original instruction: mov edx, [ebp+0Ch]
+		mov edx, [ebp + 0x0C]
+		//Instead of reading from the actual code section, redirect to the clean copy
+		mov eax, [crcCopyAddr]
+		test eax, eax
+		jz CRC_Normal //If no copy allocated, fall through to original
+		//Calculate offset from code section start and adjust to point into the copy
+		mov ebx, edx
+		sub ebx, 0x00401000 //subtract image base to get offset
+		add ebx, eax //add copy base address
+		mov edx, ebx //use the copy address instead
+		CRC_Normal:
+		pop ebx
+		pop eax
+		popfd
+		mov eax, [edx] //original: read the byte at the address
+		jmp dword ptr[MSCRCBypassAddr1Ret]
+	} EndCodeCave
+
+	//BYOR (Bring Your Own Rope) - allows player to climb a virtual rope at mouse position
+	//Original bytes: 8B 45 08 83 F8 (mov eax,[ebp+08]; cmp eax,...)
+	CodeCave(BYORHook) {
+		pushfd
+		push eax
+		push ecx
+		push edx
+		//Read mouse position from InputBase -> MouseLocation -> MouseX/Y
+		mov eax, [InputBase]
+		mov eax, [eax]
+		mov ecx, [OFS_MouseLocation]
+		mov eax, [eax + ecx]
+		mov ecx, [OFS_MouseX]
+		mov edx, [eax + ecx] //edx = mouse X
+		push edx
+		mov ecx, [OFS_MouseY]
+		mov edx, [eax + ecx] //edx = mouse Y
+		//Write mouse position to character
+		mov eax, [UserLocalBase]
+		mov eax, [eax]
+		test eax, eax
+		jz BYOR_Normal
+		mov ecx, [OFS_CharX]
+		pop edx //mouse X
+		mov [eax + ecx], edx //Set character X
+		mov ecx, [OFS_CharY]
+		mov [eax + ecx], edx //Set character Y (reuse edx for now)
+		jmp BYOR_Done
+		BYOR_Normal:
+		pop edx //clean stack
+		BYOR_Done:
+		pop edx
+		pop ecx
+		pop eax
+		popfd
+		//Original instruction
+		mov eax, [ebp + 0x08]
+		cmp eax, 0 //partial original instruction (83 F8 continues)
+		jmp dword ptr[bringYourOwnRopeAddrRet]
 	} EndCodeCave
 }
 
