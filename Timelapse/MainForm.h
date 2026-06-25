@@ -159,8 +159,8 @@ namespace Timelapse {
 	public: System::Windows::Forms::TextBox^  tbMouseTeleport;
 	public: System::Windows::Forms::TextBox^  tbClickTeleport;
 	private: System::Windows::Forms::CheckBox^  cbSwimInAir;
-	private: System::Windows::Forms::CheckBox^  cbClickTeleport;
-	private: System::Windows::Forms::CheckBox^  cbMouseTeleport;
+	public: System::Windows::Forms::CheckBox^  cbClickTeleport;
+	public: System::Windows::Forms::CheckBox^  cbMouseTeleport;
 	private: System::Windows::Forms::CheckBox^  cbPortalTeleport;
 	private: System::Windows::Forms::CheckBox^  cbQingGong;
 	private: System::Windows::Forms::CheckBox^  cbWenRuTaiShan;
